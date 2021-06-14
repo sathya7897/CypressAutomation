@@ -1,0 +1,106 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 1,
+    "passes": 1,
+    "pending": 0,
+    "failures": 0,
+    "start": "2021-06-14T09:53:26.813Z",
+    "end": "2021-06-14T09:59:49.153Z",
+    "duration": 382340,
+    "testsRegistered": 1,
+    "passPercent": 100,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "38939e08-5c25-474f-b529-da9a7141132d",
+      "title": "",
+      "fullFile": "cypress/integration/examples/Purchaseentry.spec.js",
+      "file": "cypress/integration/examples/Purchaseentry.spec.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "b97aa452-8e7a-4c60-a4c6-5e8ade71522d",
+          "title": "R1 purchase entry",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "Pre Inventory check",
+              "fullTitle": "R1 purchase entry Pre Inventory check",
+              "timedOut": null,
+              "duration": 377224,
+              "state": "passed",
+              "speed": "slow",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "cy.r1Login();\ncy.viewport(1280, 800);\ncy.xpath(_xpath.default.Inventory.Adminfieldclick).click();\ncy.xpath(_xpath.default.Inventory.Inventoryclick).click();\nlet purchasevalue;\nfor (purchasevalue = 0; purchasevalue < 2; purchasevalue++) {\n  // cy.xpath(xpathJson.PurchaseEntry.dbSwitchButton).click();\n  // cy.xpath(xpathJson.PurchaseEntry.selectedStore).click();\n  // cy.wait(4000);\n  cy.task('getDataFromExcel', 'Purchaseentry').then(rows => {\n    rows.forEach(value => {\n      cy.xpath(_xpath.default.Inventory.searchfieldclick).clear();\n      cy.xpath(_xpath.default.Inventory.searchfieldclick).invoke('val', value.PurchaseEntryEAN).type('{enter}');\n      cy.xpath(_xpath.default.Inventory.inventoryprice.replace('{{sellingprice}}', value.SellingPrice)).invoke('text').then(inventoryprice => {\n        cy.xpath(_xpath.default.Inventory.inventoryqty.replace('{{sellingprice}}', value.SellingPrice)).invoke('text').then(quantityValue => {\n          cy.xpath(_xpath.default.Inventory.inventoryvalue.replace('{{sellingprice}}', value.SellingPrice)).invoke('text').then(inventoryValue => {\n            cy.log(inventoryprice);\n            cy.log(quantityValue);\n            cy.log(inventoryValue);\n            preInventoryValue[value.PurchaseEntryEAN] = {\n              \"quantity\": quantityValue,\n              \"inventoryValue\": inventoryValue\n            };\n            cy.log(JSON.stringify(preInventoryValue));\n          });\n        });\n      });\n    });\n  });\n  cy.log(JSON.stringify(preInventoryValue)); // })\n  // it('Create purcahse entry', function () {\n  cy.xpath(_xpath.default.PurchaseEntry.PurchaseButton).click();\n  cy.xpath(_xpath.default.PurchaseEntry.PurchaseEntryButton).click();\n  cy.xpath(_xpath.default.PurchaseEntry.ClickSupplierDetailsButton).click();\n  cy.task('getDataFromExcel', 'Purchaseentry').then(rows => {\n    if (rows && rows.length > 0) {\n      rows.forEach((product, index) => {\n        if (product.SupplierCode) {\n          cy.xpath(_xpath.default.PurchaseEntry.SupplierCode).type(product.SupplierCode).type('{enter}');\n          cy.wait(500);\n          cy.xpath(_xpath.default.PurchaseEntry.PoNumber).type(product.PoNumber);\n          cy.task('getDateString', product.PoDate).then(dateString => {\n            console.log(dateString);\n            cy.xpath(_xpath.default.PurchaseEntry.PoDate).type(dateString);\n          });\n          cy.xpath(_xpath.default.PurchaseEntry.Invoicenumber).type(product.InvoiceNumber);\n          cy.task('getDateString', product.InvoiceDate).then(dateString => {\n            console.log(dateString);\n            cy.xpath(_xpath.default.PurchaseEntry.InvoiceDate).type(dateString);\n          });\n          cy.xpath(_xpath.default.PurchaseEntry.ClickBrand).click();\n          cy.wait(2000);\n          cy.xpath(_xpath.default.PurchaseEntry.SearchBrand).type(product.Brands);\n          cy.xpath(_xpath.default.PurchaseEntry.selectMatOption).contains(product.Brands).click();\n        }\n        let PETableRows = _xpath.default.PurchaseEntry.PETableRows.replace('{{index}}', index + 1);\n        cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PEEan).type(product.PurchaseEntryEAN).type('{enter}');\n        cy.wait(1000);\n        cy.get('body').then(body => {\n          if (body.find(_xpath.default.PurchaseEntry.PEifmultiprice).length) {\n            cy.xpath(_xpath.default.PurchaseEntry.PEMultipriceElement.replace('{{replacecode}}', product.SellingPrice)).type('{enter}');\n          }\n          cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PEReceivedQuantity).type(product.ReceivedQuantity);\n          cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PEHsn).invoke('val').then(PEHsnValue => {\n            if (!(PEHsnValue && PEHsnValue.length)) {\n              cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PEHsn).type(product.Hsn);\n            }\n          });\n          cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PEFreeQuantity).type(product.Freequantity);\n          cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PECost).type(product.Cost);\n          cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PEDiscount).type(product.DiscountAmount);\n          cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PESellingprice).type(product.SellingPrice);\n        });\n        cy.wait(2000);\n      });\n    }\n  }); // })\n  // it('Calculation check', function () {\n  cy.wait(500);\n  cy.task('getDataFromExcel', 'Purchaseentry').then(rows => {\n    cy.wrap(rows).each((value, index) => {\n      let PETableRows = _xpath.default.PurchaseEntry.PETableRows.replace('{{index}}', index + 1);\n      cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PETaxamountfield.replace('{index}', index)).invoke('val').then(PETaxamountfield => {\n        cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PEdiscountamountfield.replace('{index}', index)).invoke('val').then(PEdiscountamountfield => {\n          cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PECost.replace('{index}', index)).invoke('val').then(PECost => {\n            cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PEAmount.replace('{index}', index)).invoke('val').then(PEAmount => {\n              cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PENetcost.replace('{index}', index)).invoke('val').then(PENetcost => {\n                cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PENetAmount.replace('{index}', index)).invoke('val').then(PENetAmount => {\n                  cy.xpath(PETableRows + _xpath.default.PurchaseEntry.PEReceivedQuantity.replace('{index}', index)).invoke('val').then(PEReceivedQuantity => {\n                    let calculatednetcost;\n                    expect(parseFloat(PEReceivedQuantity) * parseFloat(PECost)).to.eq(parseFloat(PEAmount));\n                    calculatednetcost = parseFloat(PEAmount) + parseFloat(PETaxamountfield || 0) - parseFloat(PEdiscountamountfield || 0);\n                    expect(parseFloat(calculatednetcost)).to.eq(parseFloat(PENetcost));\n                  });\n                });\n              });\n            });\n          });\n        });\n      });\n    });\n  });\n  cy.xpath(_xpath.default.PurchaseEntry.PESaveButton).click();\n  cy.wait(1000);\n  cy.xpath(_xpath.default.PurchaseEntry.PEBackButton).click(); // })\n  // it('PostInventoryCheck', function () {\n  cy.xpath(_xpath.default.Inventory.Adminfieldclick).click();\n  cy.xpath(_xpath.default.Inventory.Inventoryclick).click();\n  cy.task('getDataFromExcel', 'Purchaseentry').then(rows => {\n    rows.forEach(value => {\n      cy.wait(1000);\n      cy.xpath(_xpath.default.Inventory.searchfieldclick).clear();\n      cy.xpath(_xpath.default.Inventory.searchfieldclick).invoke('val', value.PurchaseEntryEAN).type('{enter}');\n      cy.wait(1000);\n      cy.xpath(_xpath.default.Inventory.inventoryprice.replace('{{sellingprice}}', value.SellingPrice)).invoke('text').then(inventoryprice => {\n        cy.xpath(_xpath.default.Inventory.inventoryqty.replace('{{sellingprice}}', value.SellingPrice)).invoke('text').then(quantityValue => {\n          cy.xpath(_xpath.default.Inventory.inventoryvalue.replace('{{sellingprice}}', value.SellingPrice)).invoke('text').then(inventoryValue => {\n            cy.log(inventoryprice);\n            cy.log(quantityValue);\n            cy.log(inventoryValue);\n            postInventoryValue[value.PurchaseEntryEAN] = {\n              \"quantity\": quantityValue,\n              \"inventoryValue\": inventoryValue\n            };\n            cy.log(postInventoryValue);\n          });\n        });\n      });\n    });\n  });\n  cy.wait(5000); // })\n  // it('Compare Inventory Values', function () {\n  cy.task('getDataFromExcel', 'Purchaseentry').then(rows => {\n    rows.forEach(value => {\n      expect(parseInt(postInventoryValue[value.PurchaseEntryEAN].quantity)).to.eq(parseInt(preInventoryValue[value.PurchaseEntryEAN].quantity) + parseInt(value.ReceivedQuantity) + parseInt(value.Freequantity));\n    });\n  }); // })\n}",
+              "err": {},
+              "uuid": "b11fd741-5e88-43d9-8ec4-393c6b7a869b",
+              "parentUUID": "b97aa452-8e7a-4c60-a4c6-5e8ade71522d",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "b11fd741-5e88-43d9-8ec4-393c6b7a869b"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 377224,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.0.1"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": true,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "6.2.2"
+    },
+    "marge": {
+      "options": {
+        "reportDir": "cypress/reports",
+        "overwrite": true,
+        "html": true,
+        "json": true,
+        "charts": true
+      },
+      "version": "5.2.0"
+    }
+  }
+}
